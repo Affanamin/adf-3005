@@ -76,14 +76,14 @@
 							],
 							"outputs": [
 								{
-									"referenceName": "DS_SqlForParameterizedDataset",
+									"referenceName": "DS_SQL_Abhishek",
 									"type": "DatasetReference",
 									"parameters": {
-										"Outputschema": {
+										"schmeaname": {
 											"value": "@item().Outputschema",
 											"type": "Expression"
 										},
-										"OutputTable": {
+										"tablename": {
 											"value": "@item().OutputTable",
 											"type": "Expression"
 										}

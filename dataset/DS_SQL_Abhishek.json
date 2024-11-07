@@ -1,0 +1,30 @@
+{
+	"name": "DS_SQL_Abhishek",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_SqlDatabaseEllipse",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"schmeaname": {
+				"type": "string"
+			},
+			"tablename": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": {
+				"value": "@dataset().schmeaname",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().tablename",
+				"type": "Expression"
+			}
+		}
+	}
+}
