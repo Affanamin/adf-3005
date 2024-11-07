@@ -1,0 +1,20 @@
+{
+	"name": "DS_SqlForParameterizedDataset",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_SqlDatabaseEllipse",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Outputschema": {
+				"type": "string"
+			},
+			"OutputTable": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": []
+	}
+}
