@@ -1,0 +1,9 @@
+{
+	"name": "adf-ellipse-3005",
+	"location": "uaenorth",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "124cc636-fcbd-4dcb-86e7-d2ba6739671d",
+		"tenantId": "99ab3059-72a7-4603-804e-ab2116634426"
+	}
+}

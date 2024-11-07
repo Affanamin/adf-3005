@@ -1,0 +1,25 @@
+{
+	"name": "FromSourceToCurated",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LinkedServiceForSourceToCurated",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "Employee_data.csv",
+				"folderPath": "Source",
+				"fileSystem": "input"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

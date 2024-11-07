@@ -1,0 +1,24 @@
+{
+	"name": "DS_SinkCuratedDepartmentCsv",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LinkedServiceForSourceToCurated",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "Curated",
+				"fileSystem": "input"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
