@@ -6,13 +6,10 @@
 			"type": "LinkedServiceReference"
 		},
 		"parameters": {
-			"containername": {
+			"Outputschema": {
 				"type": "string"
 			},
-			"directoryname": {
-				"type": "string"
-			},
-			"filename": {
+			"OutputTable": {
 				"type": "string"
 			}
 		},
