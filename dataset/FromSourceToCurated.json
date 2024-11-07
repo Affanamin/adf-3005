@@ -10,7 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "Employee_data.csv",
+				"fileName": "Department2.csv",
 				"folderPath": "Source",
 				"fileSystem": "input"
 			},
