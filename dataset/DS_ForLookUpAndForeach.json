@@ -10,7 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "metadataExcelCSV.csv",
+				"fileName": "metadataExcelCSV_Sql.csv",
 				"fileSystem": "metadatafiles"
 			},
 			"columnDelimiter": ",",
