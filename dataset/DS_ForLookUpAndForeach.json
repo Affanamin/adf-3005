@@ -1,0 +1,48 @@
+{
+	"name": "DS_ForLookUpAndForeach",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LinkedServiceForSourceToCurated",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "metadataExcelCSV.csv",
+				"fileSystem": "metadatafiles"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Inputcontainer",
+				"type": "String"
+			},
+			{
+				"name": "Inputdirectory",
+				"type": "String"
+			},
+			{
+				"name": "Inputfile",
+				"type": "String"
+			},
+			{
+				"name": "Outputcontainer",
+				"type": "String"
+			},
+			{
+				"name": "OutputDirectory",
+				"type": "String"
+			},
+			{
+				"name": "Outputfile",
+				"type": "String"
+			}
+		]
+	}
+}
