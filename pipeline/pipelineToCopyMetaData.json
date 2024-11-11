@@ -55,7 +55,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"schmeaname": "dbo",
-							"tablename": "metadatasql"
+							"tablename": "metadata_datalake"
 						}
 					}
 				]
