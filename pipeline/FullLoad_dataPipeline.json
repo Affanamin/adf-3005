@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "Select * from [dbo].[metadata_datalake] where Flag = 1;",
+						"sqlReaderQuery": "Select * from [dbo].[metadata_datalake] where Flag = '1' ;",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
