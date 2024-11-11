@@ -136,6 +136,70 @@
 									}
 								}
 							]
+						},
+						{
+							"name": "FirstCopyDataStoredProcedure",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "CopyDataForParamterizedDataset",
+									"dependencyConditions": [
+										"Completed"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[dbo].[copyDataActivity_Reporting]",
+								"storedProcedureParameters": {
+									"copydatastatus": {
+										"value": {
+											"value": "@activity('CopyDataForParamterizedDataset').Status",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"inputfilename": {
+										"value": {
+											"value": "@item().Inputfile",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"copydataduration": {
+										"value": {
+											"value": "@activity('CopyDataForParamterizedDataset').output.copyDuration",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"sinktype": {
+										"value": {
+											"value": "@activity('CopyDataForParamterizedDataset').output.executionDetails[0].sink.type",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"sourcetype": {
+										"value": {
+											"value": "@activity('CopyDataForParamterizedDataset').output.executionDetails[0].source.type",
+											"type": "Expression"
+										},
+										"type": "String"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "LS_SqlDatabaseEllipse",
+								"type": "LinkedServiceReference"
+							}
 						}
 					]
 				}
@@ -143,6 +207,8 @@
 			{
 				"name": "ForEach2_FullLoadPipeline",
 				"type": "ForEach",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "ForEach1_FullLoadPipeline",
