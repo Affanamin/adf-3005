@@ -194,7 +194,7 @@
 						"typeProperties": {
 							"source": {
 								"type": "AzureSqlSource",
-								"sqlReaderQuery": "Select * from [dbo].[metadata_datalake] where Flag = 1;",
+								"sqlReaderQuery": "Select * from [dbo].[metadata_datalake] where Flag = '1' ;",
 								"queryTimeout": "02:00:00",
 								"partitionOption": "None"
 							},
@@ -313,6 +313,70 @@
 											}
 										}
 									]
+								},
+								{
+									"name": "FirstCopyDataStoredProcedure",
+									"type": "SqlServerStoredProcedure",
+									"dependsOn": [
+										{
+											"activity": "CopyDataForParamterizedDataset",
+											"dependencyConditions": [
+												"Completed"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"storedProcedureName": "[[dbo].[copyDataActivity_Reporting]",
+										"storedProcedureParameters": {
+											"copydatastatus": {
+												"value": {
+													"value": "@activity('CopyDataForParamterizedDataset').Status",
+													"type": "Expression"
+												},
+												"type": "String"
+											},
+											"inputfilename": {
+												"value": {
+													"value": "@item().Inputfile",
+													"type": "Expression"
+												},
+												"type": "String"
+											},
+											"copydataduration": {
+												"value": {
+													"value": "@activity('CopyDataForParamterizedDataset').output.copyDuration",
+													"type": "Expression"
+												},
+												"type": "String"
+											},
+											"sinktype": {
+												"value": {
+													"value": "@activity('CopyDataForParamterizedDataset').output.executionDetails[0].sink.type",
+													"type": "Expression"
+												},
+												"type": "String"
+											},
+											"sourcetype": {
+												"value": {
+													"value": "@activity('CopyDataForParamterizedDataset').output.executionDetails[0].source.type",
+													"type": "Expression"
+												},
+												"type": "String"
+											}
+										}
+									},
+									"linkedServiceName": {
+										"referenceName": "LS_SqlDatabaseEllipse",
+										"type": "LinkedServiceReference"
+									}
 								}
 							]
 						}
@@ -320,6 +384,8 @@
 					{
 						"name": "ForEach2_FullLoadPipeline",
 						"type": "ForEach",
+						"state": "Inactive",
+						"onInactiveMarkAs": "Succeeded",
 						"dependsOn": [
 							{
 								"activity": "ForEach1_FullLoadPipeline",
@@ -428,7 +494,8 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/DS_SQL_Abhishek')]",
-				"[concat(variables('factoryId'), '/datasets/DS_ForParameterizedDataset')]"
+				"[concat(variables('factoryId'), '/datasets/DS_ForParameterizedDataset')]",
+				"[concat(variables('factoryId'), '/linkedServices/LS_SqlDatabaseEllipse')]"
 			]
 		},
 		{
@@ -1097,7 +1164,7 @@
 								"type": "DatasetReference",
 								"parameters": {
 									"schmeaname": "dbo",
-									"tablename": "metadata_datalake"
+									"tablename": "metadata_sp_monitoring"
 								}
 							}
 						]
@@ -1556,6 +1623,97 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ExecutePipelineForThisProject')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "MasterPipelin1_ExecutingForEachWithLookUp",
+						"description": "This Master pipeline 1 will execute For EachWithLoop Pipeline.",
+						"type": "ExecutePipeline",
+						"dependsOn": [],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "forEachWithLookup",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					},
+					{
+						"name": "MasterPipeline2_ExecuteFullLoad",
+						"description": "This Master pipeline 2 will execute FullLoad Pipeline.",
+						"type": "ExecutePipeline",
+						"dependsOn": [
+							{
+								"activity": "MasterPipelin1_ExecutingForEachWithLookUp",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"pipeline": {
+								"referenceName": "FullLoad_dataPipeline",
+								"type": "PipelineReference"
+							},
+							"waitOnCompletion": true,
+							"parameters": {}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/forEachWithLookup')]",
+				"[concat(variables('factoryId'), '/pipelines/FullLoad_dataPipeline')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/FullLoadPipelineTrigger')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "ExecutePipelineForThisProject",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Minute",
+						"interval": 15,
+						"startTime": "2024-11-12T11:49:00",
+						"endTime": "2024-11-12T12:01:00",
+						"timeZone": "Pakistan Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/ExecutePipelineForThisProject')]"
+			]
 		}
 	]
 }
