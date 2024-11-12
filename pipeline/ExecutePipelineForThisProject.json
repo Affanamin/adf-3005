@@ -1,0 +1,49 @@
+{
+	"name": "ExecutePipelineForThisProject",
+	"properties": {
+		"activities": [
+			{
+				"name": "MasterPipelin1_ExecutingForEachWithLookUp",
+				"description": "This Master pipeline 1 will execute For EachWithLoop Pipeline.",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "forEachWithLookup",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "MasterPipeline2_ExecuteFullLoad",
+				"description": "This Master pipeline 2 will execute FullLoad Pipeline.",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "MasterPipelin1_ExecutingForEachWithLookUp",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "FullLoad_dataPipeline",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"annotations": []
+	}
+}
