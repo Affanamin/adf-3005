@@ -32,7 +32,7 @@
 				"typeProperties": {
 					"recurrence": {
 						"frequency": "Minute",
-						"interval": 15,
+						"interval": 5,
 						"startTime": "2024-11-12T11:49:00",
 						"endTime": "2024-11-12T12:01:00",
 						"timeZone": "Pakistan Standard Time"
