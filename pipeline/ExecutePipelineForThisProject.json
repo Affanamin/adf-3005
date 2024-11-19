@@ -23,6 +23,8 @@
 				"name": "MasterPipeline2_ExecuteFullLoad",
 				"description": "This Master pipeline 2 will execute FullLoad Pipeline.",
 				"type": "ExecutePipeline",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "MasterPipelin1_ExecutingForEachWithLookUp",
@@ -41,6 +43,38 @@
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "ExecutePipelineForCrash",
+				"type": "ExecutePipeline",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [
+					{
+						"activity": "MasterPipelin1_ExecutingForEachWithLookUp",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "EmailAlert",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true,
+					"parameters": {
+						"Message": {
+							"value": "Pipeline Failed Starttime: @{pipeline().TriggerTime} Bacth End Time @{utcNow()}",
+							"type": "Expression"
+						},
+						"Subject": "Copy_data_activity"
+					}
 				}
 			}
 		],
