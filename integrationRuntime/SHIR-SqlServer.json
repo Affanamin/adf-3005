@@ -1,0 +1,7 @@
+{
+	"name": "SHIR-SqlServer",
+	"properties": {
+		"type": "SelfHosted",
+		"description": "This Self Hosted IR is to get data from my windows on premise SQL server"
+	}
+}
