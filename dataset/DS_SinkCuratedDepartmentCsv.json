@@ -10,6 +10,7 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
+				"fileName": "AddressTable.csv",
 				"folderPath": "Curated",
 				"fileSystem": "input"
 			},
