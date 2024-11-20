@@ -10,9 +10,12 @@
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
-				"fileName": "Department2.csv",
-				"folderPath": "Source",
-				"fileSystem": "input"
+				"fileName": "delta_productCategory.csv",
+				"folderPath": {
+					"value": "@formatDateTime(utcNow(),'dd_MM_yyyy')",
+					"type": "Expression"
+				},
+				"fileSystem": "deltaload"
 			},
 			"columnDelimiter": ",",
 			"escapeChar": "\\",
