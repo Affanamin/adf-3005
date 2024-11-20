@@ -1,0 +1,16 @@
+{
+	"name": "GetMetaDataForDeltaLoad",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_SqlDatabaseEllipse",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "deltametadata"
+		}
+	}
+}

@@ -1,0 +1,12 @@
+{
+	"name": "DS_FormetaDataInDeltaLoad",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_SqlServerOnPrem",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": []
+	}
+}
