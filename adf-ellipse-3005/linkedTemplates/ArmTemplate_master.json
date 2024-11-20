@@ -27,10 +27,6 @@
 			"type": "string",
 			"defaultValue": "cloudsql"
 		},
-		"LinkedServiceForSourceToCurated_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://saellipse3005gen2.dfs.core.windows.net/"
-		},
 		"LS_SqlServerOnPrem_properties_typeProperties_server": {
 			"type": "string",
 			"defaultValue": "DESKTOP-QR891Q3\\SQLEXPRESS"
@@ -42,6 +38,10 @@
 		"LS_SqlServerOnPrem_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "mrk"
+		},
+		"LinkedServiceForSourceToCurated_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://saellipse3005gen2.dfs.core.windows.net/"
 		},
 		"containerUri": {
 			"type": "string",

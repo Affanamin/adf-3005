@@ -363,9 +363,12 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"fileName": "Department2.csv",
-						"folderPath": "Source",
-						"fileSystem": "input"
+						"fileName": "delta_productCategory.csv",
+						"folderPath": {
+							"value": "@formatDateTime(utcNow(),'dd_MM_yyyy')",
+							"type": "Expression"
+						},
+						"fileSystem": "deltaload"
 					},
 					"columnDelimiter": ",",
 					"escapeChar": "\\",
@@ -1038,7 +1041,7 @@
 				"schema": [],
 				"typeProperties": {
 					"schema": "dbo",
-					"table": "departmentTableSql"
+					"table": "oldwatermark"
 				}
 			},
 			"dependsOn": [
@@ -1059,7 +1062,7 @@
 				"schema": [],
 				"typeProperties": {
 					"schema": "SalesLT",
-					"table": "Address"
+					"table": "ProductCategory"
 				}
 			},
 			"dependsOn": [
@@ -1067,140 +1070,24 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/CopyDataFromDLtoSql_params')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
+			"name": "[concat(parameters('factoryName'), '/DS_AzureSqlTable_ProductCate')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"activities": [
-					{
-						"name": "ForEachActivityTOGetDataFromDLToSql",
-						"type": "ForEach",
-						"dependsOn": [],
-						"userProperties": [],
-						"typeProperties": {
-							"items": {
-								"value": "@variables('metadata')",
-								"type": "Expression"
-							},
-							"activities": [
-								{
-									"name": "Copy data1",
-									"type": "Copy",
-									"dependsOn": [],
-									"policy": {
-										"timeout": "0.12:00:00",
-										"retry": 0,
-										"retryIntervalInSeconds": 30,
-										"secureOutput": false,
-										"secureInput": false
-									},
-									"userProperties": [],
-									"typeProperties": {
-										"source": {
-											"type": "DelimitedTextSource",
-											"storeSettings": {
-												"type": "AzureBlobFSReadSettings",
-												"recursive": true,
-												"enablePartitionDiscovery": false
-											},
-											"formatSettings": {
-												"type": "DelimitedTextReadSettings"
-											}
-										},
-										"sink": {
-											"type": "AzureSqlSink",
-											"writeBehavior": "insert",
-											"sqlWriterUseTableLock": false,
-											"tableOption": "autoCreate",
-											"disableMetricsCollection": false
-										},
-										"enableStaging": false,
-										"translator": {
-											"type": "TabularTranslator",
-											"typeConversion": true,
-											"typeConversionSettings": {
-												"allowDataTruncation": true,
-												"treatBooleanAsNumber": false
-											}
-										}
-									},
-									"inputs": [
-										{
-											"referenceName": "DS_ForParameterizedDataset",
-											"type": "DatasetReference",
-											"parameters": {
-												"containername": {
-													"value": "@item().Inputcontainer",
-													"type": "Expression"
-												},
-												"directoryname": {
-													"value": "@item().Inputdirectory",
-													"type": "Expression"
-												},
-												"filename": {
-													"value": "@item().Inputfile",
-													"type": "Expression"
-												}
-											}
-										}
-									],
-									"outputs": [
-										{
-											"referenceName": "DS_SQL_Abhishek",
-											"type": "DatasetReference",
-											"parameters": {
-												"schmeaname": {
-													"value": "@item().Outputschema",
-													"type": "Expression"
-												},
-												"tablename": {
-													"value": "@item().OutputTable",
-													"type": "Expression"
-												}
-											}
-										}
-									]
-								}
-							]
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
+				"linkedServiceName": {
+					"referenceName": "LS_SqlDatabaseEllipse",
+					"type": "LinkedServiceReference"
 				},
-				"variables": {
-					"metadata": {
-						"type": "Array",
-						"defaultValue": [
-							{
-								"Inputfile": "Employee_data.csv",
-								"Inputcontainer": "input",
-								"Inputdirectory": "Source",
-								"Outputschema": "dbo",
-								"OutputTable": "EmployeeTest"
-							},
-							{
-								"Inputfile": "Department.csv",
-								"Inputcontainer": "input",
-								"Inputdirectory": "Source",
-								"Outputschema": "dbo",
-								"OutputTable": "DepartmentTest"
-							},
-							{
-								"Inputfile": "Department2.csv",
-								"Inputcontainer": "input",
-								"Inputdirectory": "Source",
-								"Outputschema": "dbo",
-								"OutputTable": "Department2Test"
-							}
-						]
-					}
-				},
-				"annotations": []
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "ProductCategory"
+				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/DS_ForParameterizedDataset')]",
-				"[concat(variables('factoryId'), '/datasets/DS_SQL_Abhishek')]"
+				"[concat(variables('factoryId'), '/linkedServices/LS_SqlDatabaseEllipse')]"
 			]
 		}
 	]

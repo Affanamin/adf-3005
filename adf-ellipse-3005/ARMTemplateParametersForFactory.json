@@ -20,9 +20,6 @@
 		"LS_SqlDatabaseEllipse_properties_typeProperties_userName": {
 			"value": "cloudsql"
 		},
-		"LinkedServiceForSourceToCurated_properties_typeProperties_url": {
-			"value": "https://saellipse3005gen2.dfs.core.windows.net/"
-		},
 		"LS_SqlServerOnPrem_properties_typeProperties_server": {
 			"value": "DESKTOP-QR891Q3\\SQLEXPRESS"
 		},
@@ -31,6 +28,9 @@
 		},
 		"LS_SqlServerOnPrem_properties_typeProperties_userName": {
 			"value": "mrk"
+		},
+		"LinkedServiceForSourceToCurated_properties_typeProperties_url": {
+			"value": "https://saellipse3005gen2.dfs.core.windows.net/"
 		}
 	}
 }
