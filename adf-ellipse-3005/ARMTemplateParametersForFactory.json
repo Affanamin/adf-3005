@@ -22,6 +22,15 @@
 		},
 		"LinkedServiceForSourceToCurated_properties_typeProperties_url": {
 			"value": "https://saellipse3005gen2.dfs.core.windows.net/"
+		},
+		"LS_SqlServerOnPrem_properties_typeProperties_server": {
+			"value": "DESKTOP-QR891Q3\\SQLEXPRESS"
+		},
+		"LS_SqlServerOnPrem_properties_typeProperties_database": {
+			"value": "AdventureWorksLT2017"
+		},
+		"LS_SqlServerOnPrem_properties_typeProperties_userName": {
+			"value": "mrk"
 		}
 	}
 }
