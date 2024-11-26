@@ -29,6 +29,8 @@
 			{
 				"name": "Lookup_NewWaterMark",
 				"type": "Lookup",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
@@ -54,6 +56,8 @@
 			{
 				"name": "CopyDataFromOnPremToDataLake",
 				"type": "Copy",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "Lookup_OldWaterMark",
@@ -121,47 +125,13 @@
 				]
 			},
 			{
-				"name": "Stored procedure_ToUpdateOldWaterMark",
-				"type": "SqlServerStoredProcedure",
+				"name": "Copy data1",
+				"type": "Copy",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
 				"dependsOn": [
 					{
 						"activity": "CopyDataFromOnPremToDataLake",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"storedProcedureName": "[dbo].[updatewatermark]",
-					"storedProcedureParameters": {
-						"newwatermark": {
-							"value": {
-								"value": "@{activity('Lookup_NewWaterMark').output.firstRow.new_watermark}",
-								"type": "Expression"
-							},
-							"type": "Datetime"
-						}
-					}
-				},
-				"linkedServiceName": {
-					"referenceName": "LS_SqlDatabaseEllipse",
-					"type": "LinkedServiceReference"
-				}
-			},
-			{
-				"name": "Copy data1",
-				"type": "Copy",
-				"dependsOn": [
-					{
-						"activity": "Stored procedure_ToUpdateOldWaterMark",
 						"dependencyConditions": [
 							"Succeeded"
 						]
@@ -221,6 +191,231 @@
 						"type": "DatasetReference"
 					}
 				]
+			},
+			{
+				"name": "Lookup_ToCheckProductTableData",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Copy data1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT COUNT(*) AS RecordCount FROM dbo.ProductCategory_stg;",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzureSqlTable_ForProductCategory",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": true
+				}
+			},
+			{
+				"name": "IfConditiontoCheck",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Lookup_ToCheckProductTableData",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@greater(activity('Lookup_ToCheckProductTableData').output.firstRow.RecordCount, 0)",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "StoredProcedureForFullLoad_copy1",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[dbo].[MigrateLegacyData]"
+							},
+							"linkedServiceName": {
+								"referenceName": "LS_SqlDatabaseEllipse",
+								"type": "LinkedServiceReference"
+							}
+						}
+					],
+					"ifTrueActivities": [
+						{
+							"name": "LookUpToCheckNewData",
+							"type": "Lookup",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "select ProductCategoryID, ParentProductCategoryID, Name, RowGUID from dbo.ProductCategory where ModifiedDate >'@{activity('Lookup_OldWaterMark').output.firstRow.watermark}'",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"dataset": {
+									"referenceName": "AzureSqlTable_ForProductCategory",
+									"type": "DatasetReference"
+								},
+								"firstRowOnly": false
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "Stored procedure_ToUpdateOldWaterMark_copy1",
+				"type": "SqlServerStoredProcedure",
+				"state": "Inactive",
+				"onInactiveMarkAs": "Succeeded",
+				"dependsOn": [
+					{
+						"activity": "If Condition1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[updatewatermark]",
+					"storedProcedureParameters": {
+						"newwatermark": {
+							"value": {
+								"value": "@{activity('Lookup_NewWaterMark').output.firstRow.new_watermark}",
+								"type": "Expression"
+							},
+							"type": "Datetime"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_SqlDatabaseEllipse",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "If Condition1",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "IfConditiontoCheck",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@greater(activity('StoredProcedureFor_DeltaLoad').output.firstRow.RecordCount, 0)\n\n\n",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "Wait1",
+							"type": "Wait",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 1
+							}
+						}
+					],
+					"ifTrueActivities": [
+						{
+							"name": "StoredProcedureFor_DeltaLoad",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[dbo].[InsertDeltaLoad]",
+								"storedProcedureParameters": {
+									"Name": {
+										"value": {
+											"value": "activity('LookUpToCheckNewData').output.value.Name",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"ParentProductCategoryID": {
+										"value": {
+											"value": "@int(if(empty(activity('LookUpToCheckNewData').output.value), 0, activity('LookUpToCheckNewData').output.value[0].ParentProductCategoryID))\n\n",
+											"type": "Expression"
+										},
+										"type": "Int64"
+									},
+									"ProductCategoryID": {
+										"value": {
+											"value": "@int(if(empty(activity('LookUpToCheckNewData').output.value), 0, activity('LookUpToCheckNewData').output.value[0].ProductCategoryID))\n",
+											"type": "Expression"
+										},
+										"type": "Int64"
+									},
+									"RowGUID": {
+										"value": {
+											"value": "activity('LookUpToCheckNewData').output.value.guid",
+											"type": "Expression"
+										},
+										"type": "Guid"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "LS_SqlDatabaseEllipse",
+								"type": "LinkedServiceReference"
+							}
+						}
+					]
+				}
 			}
 		],
 		"annotations": []
