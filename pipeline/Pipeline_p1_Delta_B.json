@@ -1,5 +1,5 @@
 {
-	"name": "Pipeline_p1_Delta",
+	"name": "Pipeline_p1_Delta_B",
 	"properties": {
 		"activities": [
 			{
@@ -18,7 +18,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "select ProductCategoryID, ParentProductCategoryID, Name, RowGUID from dbo.ProductCategory where ModifiedDate >= '@{activity('Lookup_OldWaterMark').output.firstRow.watermark}'",
+							"value": "select ProductCategoryID, ParentProductCategoryID, Name, RowGUID from dbo.ProductCategory where ModifiedDate >= '@{pipeline().parameters.OldWaterMarkActivity}'\n\n\n\n",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -32,8 +32,8 @@
 				}
 			},
 			{
-				"name": "StoredProcedureFor_DeltaLoad_copy1_copy1",
-				"type": "SqlServerStoredProcedure",
+				"name": "ForEach1",
+				"type": "ForEach",
 				"dependsOn": [
 					{
 						"activity": "LookUpToCheckNewData_copy1",
@@ -42,82 +42,65 @@
 						]
 					}
 				],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
 				"userProperties": [],
 				"typeProperties": {
-					"storedProcedureName": "[dbo].[InsertDeltaLoad]",
-					"storedProcedureParameters": {
-						"Name": {
-							"value": {
-								"value": "@coalesce(activity('LookUpToCheckNewData').output.value[0].Name, '')\n\n",
-								"type": "Expression"
+					"items": {
+						"value": "@activity('LookUpToCheckNewData_copy1').output.value",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "StoredProcedureFor_DeltaLoad_copy1_copy1_copy1",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
 							},
-							"type": "String"
-						},
-						"ParentProductCategoryID": {
-							"value": {
-								"value": "@coalesce(activity('LookUpToCheckNewData').output.value[0].ParentProductCategoryID, 0)\n\n",
-								"type": "Expression"
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[dbo].[InsertDeltaLoad]",
+								"storedProcedureParameters": {
+									"Name": {
+										"value": {
+											"value": "@item().Name",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"ParentProductCategoryID": {
+										"value": {
+											"value": "@item().ParentProductCategoryID",
+											"type": "Expression"
+										},
+										"type": "Int64"
+									},
+									"ProductCategoryID": {
+										"value": {
+											"value": "@item().ProductCategoryID",
+											"type": "Expression"
+										},
+										"type": "Int64"
+									}
+								}
 							},
-							"type": "Int64"
-						},
-						"ProductCategoryID": {
-							"value": {
-								"value": "@coalesce(activity('LookUpToCheckNewData').output.value[0].ProductCategoryID, 0)\n\n",
-								"type": "Expression"
-							},
-							"type": "Int64"
+							"linkedServiceName": {
+								"referenceName": "LS_SqlDatabaseEllipse",
+								"type": "LinkedServiceReference"
+							}
 						}
-					}
-				},
-				"linkedServiceName": {
-					"referenceName": "LS_SqlDatabaseEllipse",
-					"type": "LinkedServiceReference"
-				}
-			},
-			{
-				"name": "Stored procedure_ToUpdateOldWaterMark_copy1",
-				"type": "SqlServerStoredProcedure",
-				"dependsOn": [
-					{
-						"activity": "StoredProcedureFor_DeltaLoad_copy1_copy1",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"storedProcedureName": "[dbo].[updatewatermark]",
-					"storedProcedureParameters": {
-						"newwatermark": {
-							"value": {
-								"value": "@{activity('Lookup_NewWaterMark').output.firstRow.new_watermark}",
-								"type": "Expression"
-							},
-							"type": "Datetime"
-						}
-					}
-				},
-				"linkedServiceName": {
-					"referenceName": "LS_SqlDatabaseEllipse",
-					"type": "LinkedServiceReference"
+					]
 				}
 			}
 		],
+		"parameters": {
+			"OldWaterMarkActivity": {
+				"type": "string"
+			}
+		},
 		"annotations": []
 	}
 }

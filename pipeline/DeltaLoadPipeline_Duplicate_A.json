@@ -1,0 +1,290 @@
+{
+	"name": "DeltaLoadPipeline_Duplicate_A",
+	"properties": {
+		"activities": [
+			{
+				"name": "Lookup_OldWaterMark",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DatasetSqlDB",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "Lookup_NewWaterMark",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "select max(ModifiedDate) as new_watermark from SalesLT.ProductCategory",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "SqlServerTable1",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "CopyDataFromOnPremToDataLake",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "Lookup_OldWaterMark",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "Lookup_NewWaterMark",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": {
+							"value": "select * from SalesLT.ProductCategory where ModifiedDate > '@{activity('Lookup_OldWaterMark').output.firstRow.watermark}' and ModifiedDate <= '@{activity('Lookup_NewWaterMark').output.firstRow.new_watermark}'",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "SqlServerTable1",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "FromSourceToCurated",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "Copy data1",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "CopyDataFromOnPremToDataLake",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"writeBehavior": "upsert",
+						"upsertSettings": {
+							"useTempDB": true,
+							"keys": [
+								"ProductCategoryID"
+							]
+						},
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "FromSourceToCurated",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "AzureSqlTable_ForProductCategory",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "Lookup_ToCheckProductTableData",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "Copy data1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT COUNT(*) AS RecordCount FROM dbo.ProductCategory_stg;",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "AzureSqlTable_ForProductCategory",
+						"type": "DatasetReference"
+					},
+					"firstRowOnly": true
+				}
+			},
+			{
+				"name": "IfConditiontoCheck",
+				"type": "IfCondition",
+				"dependsOn": [
+					{
+						"activity": "Lookup_ToCheckProductTableData",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"expression": {
+						"value": "@greater(activity('Lookup_ToCheckProductTableData').output.firstRow.RecordCount, 0)",
+						"type": "Expression"
+					},
+					"ifFalseActivities": [
+						{
+							"name": "StoredProcedureForFullLoad_copy1",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[dbo].[MigrateLegacyData]"
+							},
+							"linkedServiceName": {
+								"referenceName": "LS_SqlDatabaseEllipse",
+								"type": "LinkedServiceReference"
+							}
+						}
+					],
+					"ifTrueActivities": [
+						{
+							"name": "ExecutePipelineToRunPipeline_B",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "Pipeline_p1_Delta_B",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"OldWaterMarkActivity": {
+										"value": "@activity('Lookup_OldWaterMark').output.firstRow.watermark",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"annotations": []
+	}
+}

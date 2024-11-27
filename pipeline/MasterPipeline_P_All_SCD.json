@@ -9,10 +9,19 @@
 				"policy": {
 					"secureInput": false
 				},
-				"userProperties": [],
+				"userProperties": [
+					{
+						"name": "Name",
+						"value": "aa"
+					},
+					{
+						"name": "Name2",
+						"value": "bb"
+					}
+				],
 				"typeProperties": {
 					"pipeline": {
-						"referenceName": "DeltaLoad_Pipeline_For_one",
+						"referenceName": "DeltaLoadPipeline_Duplicate_A",
 						"type": "PipelineReference"
 					},
 					"waitOnCompletion": true
@@ -33,25 +42,18 @@
 				"typeProperties": {
 					"ifFalseActivities": [
 						{
-							"name": "Execute Pipeline3",
-							"type": "ExecutePipeline",
+							"name": "Wait1",
+							"type": "Wait",
 							"dependsOn": [],
-							"policy": {
-								"secureInput": false
-							},
 							"userProperties": [],
 							"typeProperties": {
-								"pipeline": {
-									"referenceName": "Pipeline_p2_Full",
-									"type": "PipelineReference"
-								},
-								"waitOnCompletion": true
+								"waitTimeInSeconds": 1
 							}
 						}
 					],
 					"ifTrueActivities": [
 						{
-							"name": "Execute Pipeline2",
+							"name": "ExecutePipeline_DeltaLoad",
 							"type": "ExecutePipeline",
 							"dependsOn": [],
 							"policy": {
@@ -60,7 +62,7 @@
 							"userProperties": [],
 							"typeProperties": {
 								"pipeline": {
-									"referenceName": "Pipeline_p1_Delta",
+									"referenceName": "Pipeline_p1_Delta_B",
 									"type": "PipelineReference"
 								},
 								"waitOnCompletion": true
