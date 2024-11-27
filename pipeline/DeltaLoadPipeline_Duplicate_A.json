@@ -283,6 +283,42 @@
 						}
 					]
 				}
+			},
+			{
+				"name": "Stored procedure_ToUpdateOldWaterMark_copy1_copy1",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "IfConditiontoCheck",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[updatewatermark]",
+					"storedProcedureParameters": {
+						"newwatermark": {
+							"value": {
+								"value": "@{activity('Lookup_NewWaterMark').output.firstRow.new_watermark}",
+								"type": "Expression"
+							},
+							"type": "Datetime"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_SqlDatabaseEllipse",
+					"type": "LinkedServiceReference"
+				}
 			}
 		],
 		"annotations": []
