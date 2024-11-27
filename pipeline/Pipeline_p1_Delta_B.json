@@ -18,7 +18,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "select ProductCategoryID, ParentProductCategoryID, Name, RowGUID from dbo.ProductCategory where ModifiedDate >= '@{pipeline().parameters.OldWaterMarkActivity}'\n\n\n\n",
+							"value": "select ProductCategoryID, ParentProductCategoryID, Name, RowGUID from dbo.ProductCategory where ModifiedDate > '@{pipeline().parameters.OldWaterMarkActivity}'\n\n\n\n",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
