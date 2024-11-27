@@ -275,7 +275,7 @@
 								"source": {
 									"type": "AzureSqlSource",
 									"sqlReaderQuery": {
-										"value": "select ProductCategoryID, ParentProductCategoryID, Name, RowGUID from dbo.ProductCategory where ModifiedDate >= '@{activity('Lookup_OldWaterMark').output.firstRow.watermark}'",
+										"value": "select ProductCategoryID, ParentProductCategoryID, Name, RowGUID from dbo.ProductCategory where ModifiedDate > '@{activity('Lookup_OldWaterMark').output.firstRow.watermark}'",
 										"type": "Expression"
 									},
 									"queryTimeout": "02:00:00",
